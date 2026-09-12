@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SWGOH Command Center</title>
+    <style>
+        :root {
+            --sw-yellow: #ffe81f;
+            --sw-blue: #00d4ff;
+            --sw-red: #ff3333;
+            --sw-green: #33ff66;
+            --sw-purple: #a855f7;
+            --bg-dark: #07090e;
+            --card-bg: #121620;
+            --border-color: #232a3b;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            background-image: radial-gradient(circle at 50% 0%, #171c28 0%, #07090e 70%);
+            min-height: 100vh;
+        }
+
+        /* Top Bar Navigation */
+        header {
+            background: rgba(18, 22, 32, 0.9);
+            backdrop-filter: blur(8px);
+            border-bottom: 2px solid var(--sw-yellow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+        }
+
+        .logo {
+            color: var(--sw-yellow);
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 10px 20px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--sw-yellow);
+            border-color: var(--sw-yellow);
+        }
+
+        .tab-btn.active {
+            background: var(--sw-yellow);
+            color: #000;
+            border-color: var(--sw-yellow);
+            box-shadow: 0 0 12px rgba(255, 232, 31, 0.4);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Common UI Elements */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        h2 {
+            margin-top: 0;
+            color: var(--sw-yellow);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* PAGE 1: ACCOUNT & RESOURCES */
+        .account-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            padding: 20px;
+            border-radius: 6px;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--sw-blue);
+            margin-top: 5px;
+        }
+
+        .resource-input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-field label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        input, select {
+            background: #090c12;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--sw-blue);
+        }
+
+        /* PAGE 2: HOLOTABLE PLANETS */
+        .holotable-nav {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .planet-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .planet-btn h3 {
+            margin: 10px 0 0 0;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+        }
+
+        .planet-btn p {
+            margin: 5px 0 0 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .planet-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto;
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.7);
+        }
+
+        /* Specific Planet Colors */
+        .planet-mustafar .planet-icon { background: linear-gradient(135deg, #ff4500, #8b0000); }
+        .planet-kamino .planet-icon { background: linear-gradient(135deg, #00bfff, #00008b); }
+        .planet-coruscant .planet-icon { background: linear-gradient(135deg, #ffd700, #4b0082); }
+        .planet-tatooine .planet-icon { background: linear-gradient(135deg, #e0cda9, #8b5a2b); }
+
+        .planet-btn.active {
+            transform: translateY(-3px);
+        }
+
+        .planet-mustafar.active { border-color: var(--sw-red); box-shadow: 0 0 15px rgba(255, 51, 51, 0.3); }
+        .planet-kamino.active { border-color: var(--sw-blue); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
+        .planet-coruscant.active { border-color: var(--sw-yellow); box-shadow: 0 0 15px rgba(255, 232, 31, 0.3); }
+        .planet-tatooine.active { border-color: var(--sw-green); box-shadow: 0 0 15px rgba(51, 255, 102, 0.3); }
+
+        .planet-content {
+            display: none;
+        }
+
+        .planet-content.active {
+            display: block;
+        }
+
+        /* Synergy Meter */
+        .synergy-meter {
+            height: 25px;
+            background: #090c12;
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 15px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .synergy-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff3333, #ffe81f, #33ff66);
+            transition: width 0.5s ease;
+        }
+
+        /* Synergy Tag badges */
+        .synergy-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin: 2px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .synergy-tag.matched {
+            background: rgba(51, 255, 102, 0.15);
+            border-color: var(--sw-green);
+            color: var(--sw-green);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .holotable-nav { grid-template-columns: repeat(2, 1fr); }
+            .nav-container { flex-direction: column; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">SWGOH Holocron</div>
+            <div class="nav-tabs">
+                <button class="tab-btn active" onclick="switchPage('page1')">1. Account & Resources</button>
+                <button class="tab-btn" onclick="switchPage('page2')">2. Holotable Planets</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- PAGE 1: ACCOUNT AND OVERALL RESOURCES -->
+        <div id="page1" class="page active">
+            <div class="card">
+                <h2>Player Roster Overview</h2>
+                <div class="resource-input-group">
+                    <div class="input-field">
+                        <label>Player Ally Code</label>
+                        <input type="text" id="allyCode" placeholder="123456789">
+                    </div>
+                    <div class="input-field" style="justify-content: flex-end;">
+                        <button class="tab-btn active" style="padding: 11px;" onclick="syncPlayerProfile()">Sync Profile</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="account-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Galactic Power</div>
+                    <div class="stat-value" id="disp-gp">6,450,000</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Crystals Stock</div>
+                    <div class="stat-value" style="color: var(--sw-yellow);" id="disp-crystals">12,450</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Credits</div>
+                    <div class="stat-value" style="color: var(--sw-green);" id="disp-credits">84.2M</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Relic 7+ Characters</div>
+                    <div class="stat-value" style="color: var(--sw-purple);" id="disp-relics">38</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Overall Resource Vault (Tracker & Budget)</h2>
+                <div class="resource-input-group">
+                    <div class="input-field">
+                        <label>Current Crystals</label>
+                        <input type="number" id="inputCrystals" value="12450" oninput="updateResourceDisplay()">
+                    </div>
+                    <div class="input-field">
+                        <label>Daily Crystal Income</label>
+                        <input type="number" id="inputDailyCrystals" value="350" oninput="updateResourceDisplay()">
+                    </div>
+                    <div class="input-field">
+                        <label>Omegas Stock</label>
+                        <input type="number" id="inputOmegas" value="142">
+                    </div>
+                    <div class="input-field">
+                        <label>Zetas Stock</label>
+                        <input type="number" id="inputZetas" value="68">
+                    </div>
+                    <div class="input-field">
+                        <label>Omicrons Stock</label>
+                        <input type="number" id="inputOmicrons" value="32">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: HOLOTABLE (4 PLANETS) -->
+        <div id="page2" class="page">
+            
+            <!-- Planet Selection Bar -->
+            <div class="holotable-nav">
+                <div class="planet-btn planet-mustafar active" onclick="switchPlanet('mustafar')">
+                    <div class="planet-icon"></div>
+                    <h3>Mustafar</h3>
+                    <p>Unlock Tracker</p>
+                </div>
+                <div class="planet-btn planet-kamino" onclick="switchPlanet('kamino')">
+                    <div class="planet-icon"></div>
+                    <h3>Kamino</h3>
+                    <p>Resource Calc</p>
+                </div>
+                <div class="planet-btn planet-coruscant" onclick="switchPlanet('coruscant')">
+                    <div class="planet-icon"></div>
+                    <h3>Coruscant</h3>
+                    <p>Raid & Events</p>
+                </div>
+                <div class="planet-btn planet-tatooine" onclick="switchPlanet('tatooine')">
+                    <div class="planet-icon"></div>
+                    <h3>Tatooine</h3>
+                    <p>Synergy Calculator</p>
+                </div>
+            </div>
+
+            <!-- MUSTAFAR CONTENT -->
+            <div id="mustafar" class="planet-content active">
+                <div class="card" style="border-left: 4px solid var(--sw-red);">
+                    <h2>Mustafar System — Galactic Legend & Journey Unlocks</h2>
+                    <p>Select a major Journey Event or Galactic Legend to view required units and gear unlocks.</p>
+                    
+                    <div class="input-field" style="max-width: 400px; margin-bottom: 20px;">
+                        <label>Select Target Journey/GL</label>
+                        <select id="unlockTarget" onchange="loadUnlockRequirements()">
+                            <option value="slkr">Galactic Legend Supreme Leader Kylo Ren</option>
+                            <option value="jmzk">Galactic Legend Jedi Master Kenobi</option>
+                            <option value="jkck">Jedi Knight Cal Kestis</option>
+                        </select>
+                    </div>
+
+                    <div id="unlockResults" style="display: grid; gap: 10px;">
+                        <!-- Dynamic Requirements Population -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- KAMINO CONTENT -->
+            <div id="kamino" class="planet-content">
+                <div class="card" style="border-left: 4px solid var(--sw-blue);">
+                    <h2>Kamino System — Resource Farming Calculator</h2>
+                    <p>Calculate days needed to farm Kyrotechs, Signal Data, or shards based on node refreshes.</p>
+                    
+                    <div class="resource-input-group">
+                        <div class="input-field">
+                            <label>Resource Target</label>
+                            <select id="resourceType">
+                                <option value="50">Kyrotech (Needs ~100 salvages)</option>
+                                <option value="150">Relic Signal Data (Needs ~150 items)</option>
+                                <option value="330">Unit Shards (0 to 7 Stars = 330 Shards)</option>
+                            </select>
+                        </div>
+                        <div class="input-field">
+                            <label>Current Saved Stock</label>
+                            <input type="number" id="resCurrent" value="20">
+                        </div>
+                        <div class="input-field">
+                            <label>Daily Energy Spent On Node</label>
+                            <input type="number" id="resEnergy" value="300">
+                        </div>
+                    </div>
+
+                    <button class="tab-btn active" style="margin-top: 20px;" onclick="calculateFarmingTime()">Calculate Farm Timeline</button>
+
+                    <div id="calcOutput" style="margin-top: 20px; font-size: 1.2rem; font-weight: bold; color: var(--sw-blue);">
+                        <!-- Output will render here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- CORUSCANT CONTENT -->
+            <div id="coruscant" class="planet-content">
+                <div class="card" style="border-left: 4px solid var(--sw-yellow);">
+                    <h2>Coruscant System — Event & Raid Calendar</h2>
+                    <div style="display: grid; gap: 15px; margin-top: 20px;">
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 6px; border-left: 3px solid var(--sw-yellow);">
+                            <span style="color: var(--sw-yellow); font-weight: bold;">ACTIVE NOW</span>
+                            <h3 style="margin: 5px 0;">Territory Battle: Rise of the Empire</h3>
+                            <p style="margin:0; font-size: 0.9rem; color: var(--text-muted);">Phase 3 Active • Ensure Platoons and Special Missions are assigned on Discord.</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 6px; border-left: 3px solid var(--sw-blue);">
+                            <span style="color: var(--sw-blue); font-weight: bold;">UPCOMING (In 2 Days)</span>
+                            <h3 style="margin: 5px 0;">Guild Featured Raid</h3>
+                            <p style="margin:0; font-size: 0.9rem; color: var(--text-muted);">Launch Window: 18:00 UTC • Save ticket attempts for maximum team modifier bonuses.</p>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 6px; border-left: 3px solid var(--sw-purple);">
+                            <span style="color: var(--sw-purple); font-weight: bold;">SCHEDULED (In 5 Days)</span>
+                            <h3 style="margin: 5px 0;">Territory War: Join Phase</h3>
+                            <p style="margin:0; font-size: 0.9rem; color: var(--text-muted);">Setup defense squads prior to locks.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TATOOINE CONTENT -->
+            <div id="tatooine" class="planet-content">
+                <div class="card" style="border-left: 4px solid var(--sw-green);">
+                    <h2>Tatooine System — Team Synergy Calculator</h2>
+                    <p>Select 5 or 6 units for your squad. Slot 1 automatically acts as the Leader.</p>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 15px;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--sw-yellow);">Slot 1 (Leader)</label>
+                            <select id="slot1" class="unit-select" onchange="calcSynergy()"></select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted);">Slot 2</label>
+                            <select id="slot2" class="unit-select" onchange="calcSynergy()"></select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted);">Slot 3</label>
+                            <select id="slot3" class="unit-select" onchange="calcSynergy()"></select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted);">Slot 4</label>
+                            <select id="slot4" class="unit-select" onchange="calcSynergy()"></select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted);">Slot 5</label>
+                            <select id="slot5" class="unit-select" onchange="calcSynergy()"></select>
+                        </div>
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted);">Slot 6 (Fleet / 6th)</label>
+                            <select id="slot6" class="unit-select" onchange="calcSynergy()"></select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 25px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Calculated Synergy Score:</span>
+                            <span id="synergyPercent" style="font-size: 1.5rem; font-weight: bold; color: var(--sw-green);">0%</span>
+                        </div>
+                        <div class="synergy-meter">
+                            <div id="synergyBar" class="synergy-fill"></div>
+                        </div>
+                        <div id="synergyReport" style="margin-top: 10px; font-size: 0.95rem;">
+                            <!-- Dynamic evaluation notes -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        // Data Store for SWGOH Units & Synergy Factions
+        const unitsData = {
+            "none": { name: "-- Empty --", faction: [] },
+            "slkr": { name: "Supreme Leader Kylo Ren", faction: ["First Order", "Dark Side", "Unaligned Force User"] },
+            "krw": { name: "Kylo Ren (Unmasked)", faction: ["First Order", "Dark Side"] },
+            "sith_trooper": { name: "Sith Trooper", faction: ["First Order", "Sith", "Dark Side"] },
+            "hux": { name: "General Hux", faction: ["First Order", "Dark Side"] },
+            "fost": { name: "First Order Stormtrooper", faction: ["First Order", "Dark Side"] },
+            "jmk": { name: "Jedi Master Kenobi", faction: ["Jedi", "Galactic Republic", "Light Side"] },
+            "cat": { name: "Commander Ahsoka Tano", faction: ["Jedi", "Galactic Republic", "Unaligned Force User", "Light Side"] },
+            "gk": { name: "General Kenobi", faction: ["Jedi", "Galactic Republic", "Light Side"] },
+            "snips": { name: "Ahsoka Tano", faction: ["Jedi", "Galactic Republic", "Light Side"] },
+            "padme": { name: "Padmé Amidala", faction: ["Galactic Republic", "Light Side"] },
+            "gas": { name: "General Skywalker", faction: ["Jedi", "501st", "Galactic Republic", "Light Side"] },
+            "rex": { name: "Captain Rex", faction: ["501st", "Clone Trooper", "Galactic Republic", "Light Side"] },
+            "fives": { name: "CT-5555 Fives", faction: ["501st", "Clone Trooper", "Galactic Republic", "Light Side"] },
+            "echo": { name: "CT-21-0408 Echo", faction: ["501st", "Clone Trooper", "Galactic Republic", "Light Side"] },
+            "arc": { name: "ARC Trooper", faction: ["501st", "Clone Trooper", "Galactic Republic", "Light Side"] }
+        };
+
+        const unlockRequirements = {
+            "slkr": [
+                "Kylo Ren (Unmasked) - Relic 7",
+                "First Order Officer - Relic 5",
+                "Sith Trooper - Relic 5",
+                "General Hux - Relic 5",
+                "Captain Phasma - Relic 5",
+                "Kylo Ren - Relic 7",
+                "First Order TIE Pilot - Relic 3",
+                "Finalizer Ship - 5 Stars"
+            ],
+            "jmzk": [
+                "General Kenobi - Relic 8",
+                "Wat Tambor - Relic 7",
+                "Bo-Katan Kryze - Relic 5",
+                "Clone Sergeant Phase I - Relic 5",
+                "Aayla Secura - Relic 3",
+                "Grand Moff Tarkin - Relic 7",
+                "Negotiator Ship - 6 Stars"
+            ],
+            "jkck": [
+                "Cal Kestis - G12",
+                "Cere Junda - G12",
+                "Merrin - G12",
+                "Tarfful - G12",
+                "Saw Gerrera - G12"
+            ]
+        };
+
+        // Navigation Controllers
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function switchPlanet(planetId) {
+            document.querySelectorAll('.planet-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.planet-btn').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(planetId).classList.add('active');
+            document.querySelector(`.planet-${planetId}`).classList.add('active');
+        }
+
+        // Mustafar Logic
+        function loadUnlockRequirements() {
+            const target = document.getElementById('unlockTarget').value;
+            const reqs = unlockRequirements[target];
+            const container = document.getElementById('unlockResults');
+
+            container.innerHTML = reqs.map(req => `
+                <div style="background: rgba(255,255,255,0.03); padding: 12px 18px; border-radius: 4px; border: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                    <span>${req}</span>
+                    <span style="color: var(--sw-green);">Required</span>
+                </div>
+            `).join('');
+        }
+
+        // Kamino Logic
+        function calculateFarmingTime() {
+            const target = parseFloat(document.getElementById('resourceType').value);
+            const current = parseFloat(document.getElementById('resCurrent').value) || 0;
+            const dailyEnergy = parseFloat(document.getElementById('resEnergy').value) || 1;
+
+            const needed = Math.max(0, target - current);
+            // Rough estimation calculation based on SWGOH drop percentages (~20-25% drop rate)
+            const dailyDrops = (dailyEnergy / 10) * 0.22; 
+            const daysLeft = Math.ceil(needed / dailyDrops);
+
+            document.getElementById('calcOutput').innerHTML = `
+                Estimated Time: <span style="color: var(--sw-yellow);">${daysLeft} Days</span> to complete farm.
+            `;
+        }
+
+        // Tatooine Logic
+        function populateUnitDropdowns() {
+            const dropdowns = document.querySelectorAll('.unit-select');
+            dropdowns.forEach(select => {
+                select.innerHTML = '';
+                for (let key in unitsData) {
+                    const opt = document.createElement('option');
+                    opt.value = key;
+                    opt.innerText = unitsData[key].name;
+                    select.appendChild(opt);
+                }
+            });
+
+            // Set default squad for demonstration (501st Clones)
+            document.getElementById('slot1').value = 'gas';
+            document.getElementById('slot2').value = 'rex';
+            document.getElementById('slot3').value = 'fives';
+            document.getElementById('slot4').value = 'echo';
+            document.getElementById('slot5').value = 'arc';
+            calcSynergy();
+        }
+
+        function calcSynergy() {
+            const selected = [
+                document.getElementById('slot1').value,
+                document.getElementById('slot2').value,
+                document.getElementById('slot3').value,
+                document.getElementById('slot4').value,
+                document.getElementById('slot5').value,
+                document.getElementById('slot6').value
+            ].filter(val => val !== 'none');
+
+            if (selected.length === 0) {
+                document.getElementById('synergyPercent').innerText = '0%';
+                document.getElementById('synergyBar').style.width = '0%';
+                document.getElementById('synergyReport').innerText = 'Select units to calculate team synergy.';
+                return;
+            }
+
+            const leader = unitsData[selected[0]];
+            let sharedFactions = {};
+
+            // Collect all faction overlaps
+            selected.forEach(unitKey => {
+                const factions = unitsData[unitKey].faction;
+                factions.forEach(f => {
+                    sharedFactions[f] = (sharedFactions[f] || 0) + 1;
+                });
+            });
+
+            // Determine highest match ratio based on leader and team overlaps
+            let maxMatches = 0;
+            let dominantFaction = "None";
+
+            for (let f in sharedFactions) {
+                if (sharedFactions[f] > maxMatches) {
+                    maxMatches = sharedFactions[f];
+                    dominantFaction = f;
+                }
+            }
+
+            const matchPercentage = Math.min(100, Math.round((maxMatches / selected.length) * 100));
+
+            document.getElementById('synergyPercent').innerText = matchPercentage + '%';
+            document.getElementById('synergyBar').style.width = matchPercentage + '%';
+
+            let reportHTML = `Primary Synergizing Tag: <strong style="color:var(--sw-yellow);">${dominantFaction}</strong> (${maxMatches}/${selected.length} units share this tag).<br>`;
+            
+            if (leader && leader.faction.length > 0) {
+                reportHTML += `Leader <strong style="color:var(--sw-blue);">${leader.name}</strong> grants leadership bonuses to matching tags.`;
+            }
+
+            document.getElementById('synergyReport').innerHTML = reportHTML;
+        }
+
+        function updateResourceDisplay() {
+            const crys = document.getElementById('inputCrystals').value;
+            document.getElementById('disp-crystals').innerText = Number(crys).toLocaleString();
+        }
+
+        function syncPlayerProfile() {
+            alert("Roster synced! Connected via public SWGOH profile index.");
+        }
+
+        // Initial setup
+        window.onload = () => {
+            loadUnlockRequirements();
+            populateUnitDropdowns();
+        };
+    </script>
+</body>
+</html>
